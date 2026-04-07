@@ -26,7 +26,6 @@
 
 #include "custom.h"
 #include "customTask.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,8 +83,6 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void *argument);
-void StartAcquireTask(void *argument);
-void StartAcquireTask2(void *argument);
 
 /* USER CODE BEGIN PFP */
 void StartDebugTask(void *argument);
@@ -173,8 +170,7 @@ int main(void)
 			&newAcquireTask2_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
-	debugTaskHandle = osThreadNew(StartDebugTask, NULL,
-			&taskDubug_attribute);
+	debugTaskHandle = osThreadNew(StartDebugTask, NULL, &taskDubug_attribute);
 
 	/* add threads, ... */
 	/* USER CODE END RTOS_THREADS */
@@ -340,8 +336,7 @@ static void MX_GPIO_Init(void)
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOD,
-			LD4_Pin | LD3_Pin | LD5_Pin | LD6_Pin | Audio_RST_Pin,
-			GPIO_PIN_RESET);
+	LD4_Pin | LD3_Pin | LD5_Pin | LD6_Pin | Audio_RST_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : CS_I2C_SPI_Pin */
 	GPIO_InitStruct.Pin = CS_I2C_SPI_Pin;
