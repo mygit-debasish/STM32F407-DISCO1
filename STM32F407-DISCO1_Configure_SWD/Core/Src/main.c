@@ -26,6 +26,9 @@
 
 #include "custom.h"
 #include "customTask.h"
+#include "FreeRTOS.h"
+#include "queue.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -74,6 +77,10 @@ osThreadId_t debugTaskHandle;
 const osThreadAttr_t taskDubug_attribute = { .name = "newDebugTask",
 		.stack_size = 128.4 * 8, .priority =
 				(osPriority_t) osPriorityAboveNormal4, };
+
+/* Define Queue */
+QueueHandle_t myQueue;
+
 
 /* USER CODE END PV */
 
@@ -128,6 +135,10 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 	SWO_Pin_Init();
 	ITM_TPIU_Init();
+
+	/*Initializng Queue */
+	myQueue = xQueueCreate(10, sizeof(char));
+
 	/* USER CODE END 2 */
 
 	/* Init scheduler */

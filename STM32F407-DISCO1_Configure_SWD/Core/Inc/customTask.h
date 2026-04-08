@@ -19,6 +19,7 @@ void StartAcquireTask2(void *argument);
 
 void ITM_Get_TasknamePriority(osThreadAttr_t *OsThreadAttr);
 void ITM_Get_TasknamePriorityTaskHandle(osThreadId_t OsTaskHandle);
+void ITM_Get_TasknamePriorityData(osThreadId_t OsTaskHandle, void *pData);
 
 
 #endif /* INC_CUSTOMTASK_H_ */
