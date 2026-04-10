@@ -24,7 +24,6 @@ extern osMutexId_t myMutexITMHandle;
 /* Queue Declaration */
 extern QueueHandle_t myQueue;
 
-
 /************* Task Definition starts ***********************/
 
 void StartDebugTask(void *argument)
@@ -55,29 +54,34 @@ void StartAcquireTask(void *argument)
 		/*Acquire the Mutex */
 		osMutexAcquire(&myMutexITMHandle, 200);
 
-		if (xQueueSend(myQueue, &ch, portMAX_DELAY) != pdPASS)
-		{
-			vTaskDelay(pdMS_TO_TICKS(10));
-		}
-
+//		if (xQueueSend(myQueue, &ch, portMAX_DELAY) != pdPASS)
+//		{
+//			vTaskDelay(pdMS_TO_TICKS(10));
+//		}
 		ITM_Get_TasknamePriorityTaskHandle(newAcquireTaskHandle);
+
 		osMutexRelease(&myMutexITMHandle);
 
 		ch++;
-		if (ch >= 122)
+		sendtoITM(ch);
+
+		if (ch >= 58)
+		{
 			ch = 48;
+			osThreadTerminate(newAcquireTaskHandle);
+			newAcquireTaskHandle = NULL;
+		}
 
 		vTaskDelay(pdMS_TO_TICKS(500));
 	}
 }
 
-
 /* USER CODE BEGIN Header_StartAcquireTask2 */
 /**
-* @brief Function implementing the newAcquireTask2 thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the newAcquireTask2 thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartAcquireTask2 */
 void StartAcquireTask2(void *argument)
 {
@@ -88,12 +92,12 @@ void StartAcquireTask2(void *argument)
 		/*Acquire the Mutex */
 		osMutexAcquire(&myMutexITMHandle, 200);
 
-		if (xQueueReceive(myQueue, &Rec, portMAX_DELAY) != pdPASS)
-		{
-			vTaskDelay(pdMS_TO_TICKS(10));
-		}
+//		if (xQueueReceive(myQueue, &Rec, portMAX_DELAY) != pdPASS)
+//		{
+//			vTaskDelay(pdMS_TO_TICKS(10));i
+//		}
 
-		ITM_Get_TasknamePriorityData(newAcquireTask2Handle, &Rec);
+		ITM_Get_TasknamePriorityTaskHandle(newAcquireTask2Handle);
 
 		osMutexRelease(&myMutexITMHandle);
 
@@ -101,11 +105,11 @@ void StartAcquireTask2(void *argument)
 	}
 }
 
-
+/* Private functions definition */
 void ITM_Get_TasknamePriority(osThreadAttr_t *OsThreadAttr)
 {
 	char taskName[40];
-	(void) snprintf(taskName, sizeof(taskName), "[%d]: [%s]",
+	(void) snprintf(taskName, sizeof(taskName), "[%d] [%s]",
 			OsThreadAttr->priority, OsThreadAttr->name);
 
 	ITM_sendStringwithTime(taskName);
@@ -113,10 +117,13 @@ void ITM_Get_TasknamePriority(osThreadAttr_t *OsThreadAttr)
 
 void ITM_Get_TasknamePriorityTaskHandle(osThreadId_t OsTaskHandle)
 {
-	char taskName[40];
-	(void) snprintf(taskName, sizeof(taskName), "[%d]: [%s]",
-			osThreadGetPriority(OsTaskHandle),
-			osThreadGetName(OsTaskHandle));
+	char taskName[60];
+	UBaseType_t freeStack = uxTaskGetStackHighWaterMark(OsTaskHandle);
+
+	(void) snprintf(taskName, sizeof(taskName), "[P:%d] [%-15s] [Free: %u] [CYLCNT: %lu]",
+			osThreadGetPriority(OsTaskHandle), osThreadGetName(OsTaskHandle),
+			freeStack,
+			DWT->CYCCNT);
 
 	ITM_sendStringwithTime(taskName);
 }
@@ -125,10 +132,22 @@ void ITM_Get_TasknamePriorityData(osThreadId_t OsTaskHandle, void *pData)
 {
 	char taskName[40];
 	(void) snprintf(taskName, sizeof(taskName), "[%d]: [%s] [%c]",
-			osThreadGetPriority(OsTaskHandle),
-			osThreadGetName(OsTaskHandle),
-			(*(char *)pData));
+			osThreadGetPriority(OsTaskHandle), osThreadGetName(OsTaskHandle),
+			(*(char*) pData));
 
 	ITM_sendStringwithTime(taskName);
 }
 
+
+
+void DWT_Int()
+{
+	/* Enable Debug Exception and Monitor Control Registser */
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+
+	/* Resett the cycle counter */
+	DWT->CYCCNT = 0;
+
+	/* Start counting */
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}

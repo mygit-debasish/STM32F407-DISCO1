@@ -9,6 +9,7 @@
 #include "stm32f4xx_hal.h"
 #include "string.h"
 #include "stdio.h"
+#include "cmsis_os.h"
 
 void SWO_Pin_Init(void)
 {
@@ -54,19 +55,59 @@ void ITM_sendStr(const char *str)
 	{
 		ITM_SendChar(*(str++));
 	}
-	//ITM_SendChar('\n');
 }
 
 
 void ITM_sendStringwithTime(const char *str)
 {
 	static uint16_t SeqCounter = 0 ;
-	//uint32_t tick = osKernelGetTickCount();
-	//tick = 0;
 
-	char msgBuff[60];
 
-	snprintf(msgBuff, sizeof(msgBuff), "[%d] : %s \n", SeqCounter++, str);
+	char msgBuff[80];
+
+	snprintf(msgBuff, sizeof(msgBuff), "[%d] %s \n", SeqCounter++, str);
 	ITM_sendStr(msgBuff);
 }
+
+void initSomeQueue(someQueue_t *myQueue)
+{
+
+	myQueue->head = 0;
+	myQueue->tail = 0;
+	myQueue->count = 0;
+
+	memset(&myQueue->someData[0], 0, MAX_QUEUE_SIZE);
+}
+
+void enqueueData(someQueue_t *myQueue, uint8_t qData)
+{
+	if(myQueue->count == MAX_QUEUE_SIZE )
+	{
+		return;
+	}
+
+	myQueue->someData[(myQueue->tail)] = qData;
+	myQueue->tail = (myQueue->tail +1 ) % MAX_QUEUE_SIZE;
+	myQueue->count++;
+}
+
+uint8_t dequeueData(someQueue_t *myQueue)
+{
+	uint8_t ret;
+
+	if(myQueue->count == 0 )
+		{
+			return 10;
+		}
+
+
+	ret = myQueue->someData[(myQueue->head) % MAX_QUEUE_SIZE ];
+	myQueue->head = (myQueue->head +1) % MAX_QUEUE_SIZE;
+	myQueue->count--;
+
+	return ret;
+}
+
+
+
 

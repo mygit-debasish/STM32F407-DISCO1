@@ -55,19 +55,24 @@ UART_HandleTypeDef huart2;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = { .name = "defaultTask",
+const osThreadAttr_t defaultTask_attributes = { .name = "DefaultTask",
 		.stack_size = 256 * 4, .priority = (osPriority_t) osPriorityNormal3, };
+
+
 /* Definitions for newAcquireTask */
 osThreadId_t newAcquireTaskHandle;
-const osThreadAttr_t newAcquireTask_attributes = { .name = "newAcquireTask",
-		.stack_size = 256 * 4, .priority = (osPriority_t) osPriorityLow4, };
+const osThreadAttr_t newAcquireTask_attributes = { .name = "CorrectedTask",
+		.stack_size = 128 * 8, .priority = (osPriority_t) osPriorityLow4, };
+
 /* Definitions for newAcquireTask2 */
 osThreadId_t newAcquireTask2Handle;
 const osThreadAttr_t newAcquireTask2_attributes = { .name = "newAcquireTask2",
-		.stack_size = 128 * 4, .priority = (osPriority_t) osPriorityLow5, };
+		.stack_size = 128 * 8, .priority = (osPriority_t) osPriorityLow5, };
+
 /* Definitions for myMutexITM */
 osMutexId_t myMutexITMHandle;
 const osMutexAttr_t myMutexITM_attributes = { .name = "myMutexITM" };
+
 /* Definitions for myBinarySemITM */
 osSemaphoreId_t myBinarySemITMHandle;
 const osSemaphoreAttr_t myBinarySemITM_attributes = { .name = "myBinarySemITM" };
@@ -80,6 +85,8 @@ const osThreadAttr_t taskDubug_attribute = { .name = "newDebugTask",
 
 /* Define Queue */
 QueueHandle_t myQueue;
+
+uint8_t retData;
 
 
 /* USER CODE END PV */
@@ -133,6 +140,27 @@ int main(void)
 	MX_USART2_UART_Init();
 
 	/* USER CODE BEGIN 2 */
+
+	DWT_Int();
+
+	/* Initalize Queue */
+	someQueue_t testQueue;
+	initSomeQueue(&testQueue);
+
+	/*Enqueue Data */
+	enqueueData(&testQueue, 5);
+	enqueueData(&testQueue, 10);
+	enqueueData(&testQueue, 15);
+	enqueueData(&testQueue, 20);
+
+	/*Dequeue Data */
+	retData = dequeueData(&testQueue);
+	retData = dequeueData(&testQueue);
+	retData = dequeueData(&testQueue);
+	retData = dequeueData(&testQueue);
+
+	retData = dequeueData(&testQueue);
+
 	SWO_Pin_Init();
 	ITM_TPIU_Init();
 
@@ -188,6 +216,7 @@ int main(void)
 
 	/* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
+
 	/* USER CODE END RTOS_EVENTS */
 
 	/* Start scheduler */

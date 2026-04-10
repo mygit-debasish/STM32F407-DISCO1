@@ -134,6 +134,16 @@ to exclude the API function. */
  #define configPRIO_BITS         4
 #endif
 
+/* SGGGER Specific definition */
+#define configUSE_TRACE_FACILITY        1
+#define configUSE_STATS_FORMATTING_FUNCTIONS 1
+#define configGENERATE_RUN_TIME_STATS   1
+
+#define configGENERATE_RUN_TIME_STATS 0
+#define USE_LEGACY_TRACE_API 1
+
+
+
 /* The lowest interrupt priority that can be used in a call to a "set priority"
 function. */
 #define configLIBRARY_LOWEST_INTERRUPT_PRIORITY   15
